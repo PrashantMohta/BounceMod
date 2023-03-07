@@ -17,88 +17,64 @@ namespace BounceMod
     {
         internal static BounceMod Instance;
 
-        static int damageCount = 1;
+        internal static float MaxHealth = 0f, HealthFactor = 0f;
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             Log("Initializing");
             Instance = this;
             On.HeroController.Start += HeroControllerStart;
-            On.HeroController.TakeDamage += HeroController_TakeDamage;
-            On.HeroController.AddHealth += HeroController_AddHealth;
-            On.HeroController.MaxHealth += HeroController_MaxHealth;
-            On.HeroController.Die += HeroController_Die;
+            On.HeroController.Update += HeroController_Update;
+            ModHooks.CharmUpdateHook += ModHooks_CharmUpdateHook;
+            ModHooks.BlueHealthHook += ModHooks_BlueHealthHook;
         }
 
-        private void HeroController_MaxHealth(On.HeroController.orig_MaxHealth orig, HeroController self)
+        private int ModHooks_BlueHealthHook()
         {
-            resetSpeed();
+            MaxHealth = 0f;
+            return PlayerDataAccess.healthBlue;
+        }
+
+        private void ModHooks_CharmUpdateHook(PlayerData data, HeroController controller)
+        {
+            MaxHealth = 0f;
+        }
+
+        private void HeroController_Update(On.HeroController.orig_Update orig, HeroController self)
+        {
             orig(self);
-        }
-        private void resetSpeed()
-        {
-            Log("Resetting speed");
-            HeroController.instance.WALK_SPEED = OriginalValues.WALK_SPEED * globalSettings.fastBoiFactor;
-            HeroController.instance.RUN_SPEED = OriginalValues.RUN_SPEED * globalSettings.fastBoiFactor;
-            HeroController.instance.RUN_SPEED_CH = OriginalValues.RUN_SPEED_CH * globalSettings.fastBoiFactor;
-            HeroController.instance.RUN_SPEED_CH_COMBO = OriginalValues.RUN_SPEED_CH_COMBO * globalSettings.fastBoiFactor;
-        }
-        private IEnumerator HeroController_Die(On.HeroController.orig_Die orig, HeroController self)
-        {
-            reset();
-            //reset after death 
-            resetSpeed();
-            return orig(self);
-        }
-
-        private void HeroController_AddHealth(On.HeroController.orig_AddHealth orig, HeroController self, int amount)
-        {
-            damageCount = 1;
-            reset();
-            orig(self, amount);
-            //reset after heal 
-            resetSpeed();
-
-        }
-
-        private void HeroController_TakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
-        {
-            if (HKMirror.Reflection.SingletonClasses.HeroControllerR.CanTakeDamage()) { 
-                OnDamageTaken();
+            MaxHealth = globalSettings.disableBlueMasks ? PlayerDataAccess.maxHealth  : Math.Max(MaxHealth, PlayerDataAccess.maxHealth + PlayerDataAccess.healthBlue);
+            var currentHealth = globalSettings.disableBlueMasks ? PlayerDataAccess.health : (PlayerDataAccess.health + PlayerDataAccess.healthBlue);
+            var _HealthFactor = currentHealth / MaxHealth;
+            if(HealthFactor != _HealthFactor) {
+                HealthFactor = _HealthFactor;
+                Log($"percent:{HealthFactor}");
+                setSpeedPercent(HealthFactor);
+                setRecoilPercent(1 - HealthFactor);
             }
-            orig(self,go, damageSide,damageAmount, hazardType);
-            reset();
         }
 
-        private void OnDamageTaken()
+        private void setSpeedPercent(float percent)
         {
-            if(globalSettings.maxDamageCount >= damageCount)
-            {
-                damageCount++;
-            }
-            HeroController.instance.RECOIL_VELOCITY = OriginalValues.RECOIL_VELOCITY * damageCount * globalSettings.recoilFactor;
-            HeroController.instance.RECOIL_HOR_VELOCITY_LONG = OriginalValues.RECOIL_HOR_VELOCITY_LONG * damageCount * globalSettings.recoilFactor;
-            HeroController.instance.RECOIL_HOR_VELOCITY = OriginalValues.RECOIL_HOR_VELOCITY * damageCount * globalSettings.recoilFactor;
-            HeroController.instance.RECOIL_DOWN_VELOCITY = OriginalValues.RECOIL_DOWN_VELOCITY * damageCount * globalSettings.recoilFactor;
-            //slow down after damage taken
-            HeroController.instance.WALK_SPEED = OriginalValues.WALK_SPEED * globalSettings.slowBoiFactor;
-            HeroController.instance.RUN_SPEED = OriginalValues.RUN_SPEED * globalSettings.slowBoiFactor;
-            HeroController.instance.RUN_SPEED_CH = OriginalValues.RUN_SPEED_CH * globalSettings.slowBoiFactor;
-            HeroController.instance.RUN_SPEED_CH_COMBO = OriginalValues.RUN_SPEED_CH_COMBO * globalSettings.slowBoiFactor;
-            Log("current recoil factor: " + damageCount * globalSettings.recoilFactor);
-            Log("current speed factor: " + globalSettings.slowBoiFactor);
-
+            var SpeedFactor = globalSettings.MinSpeedFactor + (percent * globalSettings.MaxSpeedFactor);
+            Log($"speed:{SpeedFactor}");
+            HeroController.instance.WALK_SPEED = OriginalValues.WALK_SPEED * SpeedFactor;
+            HeroController.instance.RUN_SPEED = OriginalValues.RUN_SPEED * SpeedFactor;
+            HeroController.instance.RUN_SPEED_CH = OriginalValues.RUN_SPEED_CH * SpeedFactor;
+            HeroController.instance.RUN_SPEED_CH_COMBO = OriginalValues.RUN_SPEED_CH_COMBO * SpeedFactor;
         }
-
-        private void reset()
+        private void setRecoilPercent(float percent)
         {
-            Log("Resetting recoil");
-            HeroController.instance.RECOIL_VELOCITY = OriginalValues.RECOIL_VELOCITY ;
-            HeroController.instance.RECOIL_HOR_VELOCITY_LONG = OriginalValues.RECOIL_HOR_VELOCITY_LONG;
-            HeroController.instance.RECOIL_HOR_VELOCITY = OriginalValues.RECOIL_HOR_VELOCITY ;
-            HeroController.instance.RECOIL_DOWN_VELOCITY = OriginalValues.RECOIL_DOWN_VELOCITY ;
+            var recoilFactor = globalSettings.MinRecoilFactor + (percent * globalSettings.MaxRecoilFactor);
+            Log($"recoil:{recoilFactor}");
+            HeroController.instance.RECOIL_VELOCITY = OriginalValues.RECOIL_VELOCITY * recoilFactor;
+            HeroController.instance.RECOIL_HOR_VELOCITY_LONG = OriginalValues.RECOIL_HOR_VELOCITY_LONG * recoilFactor;
+            HeroController.instance.RECOIL_HOR_VELOCITY = OriginalValues.RECOIL_HOR_VELOCITY * recoilFactor;
+            HeroController.instance.RECOIL_DOWN_VELOCITY = OriginalValues.RECOIL_DOWN_VELOCITY * recoilFactor;
 
         }
+
+
         private void saveOriginal()
         {
             OriginalValues.RECOIL_VELOCITY = HeroController.instance.RECOIL_VELOCITY;
@@ -115,8 +91,6 @@ namespace BounceMod
         private void HeroControllerStart(On.HeroController.orig_Start orig, HeroController self)
         {
             saveOriginal();
-            // fast boi mode
-            resetSpeed();
             orig(self);
         }
 

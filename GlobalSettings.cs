@@ -8,9 +8,10 @@ namespace BounceMod
 {
     public class GlobalSettings
     {
-        public  int maxDamageCount = 50;
-        public  float recoilFactor = 0.8f;
-        public  float fastBoiFactor = 1.5f;
-        public  float slowBoiFactor = 0.5f;
+        public float MaxRecoilFactor = 15f;
+        public float MinRecoilFactor = 1f;
+        public float MaxSpeedFactor = 1.5f;
+        public float MinSpeedFactor = 0.5f;
+        public bool disableBlueMasks = false;
     }
 }
