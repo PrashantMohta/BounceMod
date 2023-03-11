@@ -1,3 +1,3 @@
-# BounceMod
+# SmashKnight
 
 A mod for the game Hollow Knight.
