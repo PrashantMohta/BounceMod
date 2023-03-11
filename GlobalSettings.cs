@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BounceMod
+namespace SmashKnight
 {
     public class GlobalSettings
     {
@@ -12,6 +12,6 @@ namespace BounceMod
         public float MinRecoilFactor = 1f;
         public float MaxSpeedFactor = 1.5f;
         public float MinSpeedFactor = 0.5f;
-        public bool disableBlueMasks = false;
+        public bool disableBlueMasks = true;
     }
 }

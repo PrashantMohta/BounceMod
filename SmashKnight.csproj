@@ -8,15 +8,15 @@
     <!--<DocumentationFile>$(OutputPath)/$(AssemblyTitle).xml</DocumentationFile>-->
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>BounceMod</RootNamespace>
-    <AssemblyName>BounceMod</AssemblyName>
+    <RootNamespace>SmashKnight</RootNamespace>
+    <AssemblyName>SmashKnight</AssemblyName>
     <TargetFramework>net472</TargetFramework>
-    <AssemblyTitle>BounceMod</AssemblyTitle>
-    <Product>BounceMod</Product>
+    <AssemblyTitle>SmashKnight</AssemblyTitle>
+    <Product>SmashKnight</Product>
     <Description>A Hollow Knight Mod</Description>
     <Copyright>Copyright ©  2023</Copyright>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>

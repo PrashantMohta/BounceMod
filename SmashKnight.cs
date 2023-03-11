@@ -6,16 +6,21 @@ using UnityEngine;
 using UObject = UnityEngine.Object;
 using HKMirror;
 
-namespace BounceMod
+namespace SmashKnight
 {
     public static class OriginalValues
     {
         public static float RECOIL_VELOCITY, RECOIL_HOR_VELOCITY_LONG, RECOIL_HOR_VELOCITY, RECOIL_DOWN_VELOCITY;
         public static float WALK_SPEED,RUN_SPEED, RUN_SPEED_CH, RUN_SPEED_CH_COMBO;
     }
-    public class BounceMod : Mod, IGlobalSettings<GlobalSettings>
+    public class SmashKnight : Mod, IGlobalSettings<GlobalSettings>
     {
-        internal static BounceMod Instance;
+        public override string GetVersion()
+        {
+            return "1.0.0";
+        }
+
+        internal static SmashKnight Instance;
 
         internal static float MaxHealth = 0f, HealthFactor = 0f;
 
